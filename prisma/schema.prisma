@@ -1,43 +1,62 @@
 // Prisma schema for job & Reerral platform
 
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider   = "postgresql"
-    
-
-  
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String  @unique
-  name     String?
-  createdAt  DateTime  @default(now())
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
 
   companies CompanyUser[]
 }
 
 model Company {
-  id        String @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  createdAt  DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   users CompanyUser[]
+  jobs  Job[]
 }
 
-
 model CompanyUser {
-  id         String  @id @default(uuid())
-  role  String 
+  id   String @id @default(uuid())
+  role String
 
-  userId      String
-  companyId   String
+  userId    String
+  companyId String
 
-  user   User   @relation(fields: [userId] , references: [id])
-  company Company @relation(fields : [companyId] , references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
 
-  @@unique([userId , companyId])
+  @@unique([userId, companyId])
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  status      JobStatus @default(OPEN)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+enum JobStatus {
+  OPEN
+  PAUSED
+  CLOSED
 }
