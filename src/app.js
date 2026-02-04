@@ -3,6 +3,7 @@ const express = require('express');
 
 const companyRoutes = require("./routes/company.routes");
 const jobRoutes = require("./routes/job.routes");
+const candidateRoutes = require("./routes/candidate.routes");
 
 function createApp(){
     const app = express();
@@ -20,7 +21,9 @@ function createApp(){
    
 
     app.use("/companies", companyRoutes);
+
     app.use( jobRoutes);
+    app.use("/", candidateRoutes);
     return app;
 }
 

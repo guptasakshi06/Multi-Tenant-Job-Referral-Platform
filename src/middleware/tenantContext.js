@@ -29,12 +29,19 @@ async function tenantContext(req , res , next){
         }
 
         // inject context
+
+        console.log("Tenant Context:" ,{
+            userId,
+            companyId,
+            companyUser,
+        });
+
        req.context = {
         userId,
         companyId,
         role : companyUser.role,
        };
-
+     console.log("🧠 FINAL CONTEXT SET:", req.context);
        next();
     } catch (error){
         console.log("Tenant context error :" , error);
@@ -44,3 +51,5 @@ async function tenantContext(req , res , next){
 
 
 module.exports = tenantContext;
+
+

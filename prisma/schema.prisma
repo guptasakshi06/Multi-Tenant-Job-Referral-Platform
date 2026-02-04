@@ -49,6 +49,8 @@ model Job {
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
 
+  candidates Candidate[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -59,4 +61,45 @@ enum JobStatus {
   OPEN
   PAUSED
   CLOSED
+}
+
+model Candidate {
+  id        String  @id @default(uuid())
+  name      String
+  email     String
+  resumeUrl String?
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id])
+
+  status CandidateStatus @default(APPLIED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  history CandidateStatusHistory[]
+
+  @@unique([email, jobId]) //prevent duplicate apply
+  @@index([jobId])
+}
+
+model CandidateStatusHistory {
+  id          String           @id @default(uuid())
+  candidateId String
+  fromStatus  CandidateStatus?
+  toStatus    CandidateStatus
+  changedBy   String? //userId (ADMIN)
+
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum CandidateStatus {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
 }
