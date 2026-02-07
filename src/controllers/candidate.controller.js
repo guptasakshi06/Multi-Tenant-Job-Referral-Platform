@@ -5,25 +5,49 @@ const prisma = require("../db");
 async function applyToJob(req, res) {
   try {
     const { jobId } = req.params;
-    const { name, email, resumeUrl } = req.body;
+    const { name, email, resumeUrl , referralId} = req.body;
 
     if (!name || !email) {
       return res.status(400).json({ message: "Name and email required" });
     }
+    const job = await prisma.job.findUnique({
+        where: { id: jobId },
+    });
+
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+
 
     const candidate = await prisma.candidate.create({
       data: {
         name,
         email,
         resumeUrl,
-        jobId,
-        history: {
-          create: {
-            toStatus: "APPLIED",
-          },
-        },
+        jobId,        
       },
     });
+
+    if(referralId){
+        const referral = await prisma.referral.findUnique({
+            where : {id : referralId},
+        });
+        if(!referral || referral.jobId !== jobId){
+            return res.status(400).json({message : "Invalid referralId"});
+        }
+        
+        if (referral.candidateId){
+            return res.status(409).json({message : "Referral already used"});
+        }
+
+        await prisma.referral.update({
+            where : {id : referralId},
+            data : {
+                candidateId : candidate.id,
+            },
+        });
+        console.log("Referral linked to canidate : ", candidate.id);
+    }
 
     res.status(201).json(candidate);
   } catch (error) {
@@ -86,12 +110,28 @@ async function updateCandidateStatus(req, res) {
       }),
     ]);
 
+    if(status === "HIRED"){
+        await prisma.referral.updateMany({
+            where : {
+                candidateId : candidateId,
+            },
+            data : {
+                status : "SUCCESS",
+            },
+        });
+    }
+
+
     res.json({ message: "Status updated" });
   } catch (error) {
     console.error("Update status error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+
+
+
 
 module.exports = {
   applyToJob,

@@ -16,6 +16,7 @@ model User {
   createdAt DateTime @default(now())
 
   companies CompanyUser[]
+  Referral  Referral[]
 }
 
 model Company {
@@ -51,8 +52,9 @@ model Job {
 
   candidates Candidate[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Referral  Referral[]
 
   @@index([companyId])
 }
@@ -101,5 +103,30 @@ enum CandidateStatus {
   INTERVIEW
   OFFER
   HIRED
+  REJECTED
+}
+
+model Referral {
+  id String @id @default(uuid())
+
+  jobId      String
+  referrerId String // User.id (employee)
+
+  candidateId String? // filled after apply
+
+  status ReferralStatus @default(PENDING)
+
+  job      Job  @relation(fields: [jobId], references: [id])
+  referrer User @relation(fields: [referrerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jobId, referrerId, candidateId])
+}
+
+enum ReferralStatus {
+  PENDING
+  SUCCESS
   REJECTED
 }
