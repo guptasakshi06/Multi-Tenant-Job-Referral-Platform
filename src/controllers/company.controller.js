@@ -1,29 +1,23 @@
 const prisma = require("../db");
-
+const AppError = require("../middleware/AppError");
 
 async function createCompany(req, res) {
+    const { name } = req.body || {};
+
   
 
-  try {
-    const { name } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ message: "Company name is required" });
-    }
-
-    const userId = req.headers["x-user-id"];
+    const userId = req.auth?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
+      throw new AppError("User not authenticated", 401);
     }
-
-    // 🔒 CRITICAL: verify user exists
+    
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid user" });
+      throw new AppError("Invalid user", 401);
     }
 
     // 🔒 Transaction = no half data
@@ -44,24 +38,15 @@ async function createCompany(req, res) {
     });
 
     return res.status(201).json(company);
-  } catch (error) {
-        console.log("❌❌❌ ERROR TYPE:", error?.constructor?.name);
-  console.log("❌❌❌ ERROR MESSAGE:", error?.message);
-  console.log("❌❌❌ FULL ERROR:", error);
-
-    console.error("CREATE COMPANY ERROR:", error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-}
+  } 
  
 /// get mt companies//////////
 
 async function getMyCompanies(req, res) {
-  try {
-    const userId = req.headers["x-user-id"];
+  const userId = req.auth?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
+      throw new AppError("User not authenticated", 401);
     }
 
     const companies = await prisma.companyUser.findMany({
@@ -81,11 +66,6 @@ async function getMyCompanies(req, res) {
     }));
 
     return res.json(result);
-  } catch (error) {
-    
-    console.error("GET /COMPANIES ERROR:", error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
 }
 
 module.exports = { createCompany, getMyCompanies };

@@ -1,8 +1,12 @@
 
 const prisma = require("../db");
 
+
+
 // PUBLIC: candidate applies to a job
 async function applyToJob(req, res) {
+    
+
   try {
     const { jobId } = req.params;
     const { name, email, resumeUrl , referralId} = req.body;
