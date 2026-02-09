@@ -7,6 +7,10 @@ const tenantContext = require("../middleware/tenantContext");
 const requireRole = require("../middleware/requireRole");
 const asyncHandler = require("../middleware/asyncHandler");
 const { createCompanySchema } = require("../validators/company.schema");
+const {getJobAnalytics} = require("../controllers/analytics.controller");
+const { getCandidateFunnel } = require("../controllers/analytics.controller");
+const { getTopReferrers } = require("../controllers/analytics.controller");
+
 
 const router = express.Router();
 
@@ -39,6 +43,27 @@ router.get(
         });
     }
     
+);
+
+router.get(
+    "/:companyId/analytics/jobs",
+    tenantContext,
+    requireRole("ADMIN"),
+    getJobAnalytics
+);
+
+router.get(
+    "/:companyId/analytics/candidates",
+    tenantContext,
+    requireRole("ADMIN"),
+    getCandidateFunnel
+);
+
+router.get(
+  "/:companyId/analytics/referrers",
+  tenantContext,
+  requireRole("ADMIN"),
+  getTopReferrers
 );
 
 module.exports = router;

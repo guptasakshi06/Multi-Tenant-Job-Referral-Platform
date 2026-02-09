@@ -4,7 +4,8 @@ async function tenantContext(req , res , next){
     try{
         const userId = req.headers["x-user-id"];
         const companyId = req.headers["x-company-id"];
-
+          const paramCompanyId = req.params.companyId;
+         
         if(!userId){
             return res.status(401).json({message :"User not authenticated"});
         }
@@ -12,6 +13,12 @@ async function tenantContext(req , res , next){
             return res.status(400).json({message : "x-company header is required"});    
 
         }
+         
+    if (paramCompanyId && paramCompanyId !== companyId) {
+      return res.status(403).json({
+        message: "Company mismatch between URL and header",
+      });
+    }
 
         //check membership
 
