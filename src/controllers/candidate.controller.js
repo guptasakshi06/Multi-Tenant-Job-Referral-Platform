@@ -1,5 +1,6 @@
 
 const prisma = require("../db");
+const applicationQueue = require("../queue/application.queue");
 
 
 
@@ -31,6 +32,16 @@ async function applyToJob(req, res) {
         jobId,        
       },
     });
+    
+    try{
+        
+    await applicationQueue.add("candidate-applied", {
+      candidateId : candidate.id,
+      email : candidate.email,
+    });
+    } catch (err){
+      console.error("⚠️ Failed to enqueue candidate-applied job", err);
+    }
 
     if(referralId){
         const referral = await prisma.referral.findUnique({
